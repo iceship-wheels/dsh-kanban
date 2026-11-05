@@ -1,0 +1,5 @@
+# Mount the kanban plugin into the profile tree. The bundle lists this package
+# in dsh.profile.bundles; this patch inserts its single plugin row.
+- insert:
+    - id: dsh-kanban
+      name: dsh-plugin-kanban

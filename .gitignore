@@ -1,0 +1,4 @@
+# scratch space: asar extractions, npm cache, test homes, screenshots
+.tmp/
+node_modules/
+*.log

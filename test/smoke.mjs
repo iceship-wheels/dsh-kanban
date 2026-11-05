@@ -381,20 +381,12 @@ check('editor is the textarea + Write/Preview form with title, status and group'
   assert.match(editorHtml, /># Notes/)
   assert.doesNotMatch(editorHtml, /dsh-kanban-block-input|role="toolbar"|dsh-kanban-edit-title/)
 })
-const sizedEditorHtml = ReactDOMServer.renderToStaticMarkup(
-  React.createElement(internals.ProjectEditor, {
-    initial: { title: 'Draft', notes: '# Notes\n\n- item', status: 'idea', group: 'work' },
-    groups: internals.DEFAULT_GROUPS,
-    t,
-    preserveHeight: 264,
-    onSave: () => {},
-    onCancel: () => {},
-  }),
-)
-check('editing keeps the tile height', () => {
-  assert.match(sizedEditorHtml, /class="dsh-kanban-editor is-sized"/)
-  assert.match(sizedEditorHtml, /style="height:264px"/)
-  assert.doesNotMatch(editorHtml, /height:/)
+check('editor is a modal with a large notes area', () => {
+  assert.match(editorHtml, /class="dsh-kanban-editor-backdrop"/)
+  assert.match(editorHtml, /role="dialog"/)
+  assert.match(editorHtml, /aria-modal="true"/)
+  assert.match(editorHtml, /dsh-kanban-editor-body/)
+  assert.match(editorHtml, /dsh-kanban-editor-hint/)
 })
 const mdViewHtml = ReactDOMServer.renderToStaticMarkup(
   React.createElement(internals.MarkdownView, {
@@ -424,7 +416,6 @@ const groupHtml = ReactDOMServer.renderToStaticMarkup(
     mode: 'fit',
     columns: 2,
     overflow: false,
-    leading: null,
     t,
     measure: () => {},
     renderProject: (item) => React.createElement(internals.ProjectCard, { key: item.id, project: item, t, onEdit: () => {}, onToggleTask: () => {}, onDelete: () => {}, onCycleStatus: () => {} }),

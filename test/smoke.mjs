@@ -352,15 +352,15 @@ const cardHtml = ReactDOMServer.renderToStaticMarkup(
     onCycleStatus: () => {},
   }),
 )
-check('card renders title, status, markdown, meta and no stale markdown label', () => {
+check('card renders title, status in the footer, markdown and meta', () => {
   assert.match(cardHtml, /dsh-kanban-card/)
   assert.match(cardHtml, /Demo project/)
-  assert.match(cardHtml, /is-active/)
+  assert.match(cardHtml, /<h2 class="dsh-kanban-card-title">Demo project<\/h2>/)
   assert.match(cardHtml, /<h2 class="dsh-kanban-sec-title">Notes<\/h2>/)
   assert.match(cardHtml, /<strong>markdown<\/strong>/)
-  assert.match(cardHtml, /updated/)
-  assert.match(cardHtml, /dsh-kanban-card-headline/)
-  assert.match(cardHtml, /class="dsh-kanban-card-headline">.*?class="dsh-kanban-card-title"/)
+  assert.match(cardHtml, /is-active/)
+  assert.match(cardHtml, /class="dsh-kanban-card-foot"><button[^>]*dsh-kanban-status[^>]*>[^<]*<[\s\S]*?updated/)
+  assert.doesNotMatch(cardHtml, /dsh-kanban-card-headline/)
   assert.doesNotMatch(cardHtml, /markdownHint/)
 })
 const editorHtml = ReactDOMServer.renderToStaticMarkup(

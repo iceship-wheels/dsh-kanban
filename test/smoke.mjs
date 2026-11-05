@@ -381,6 +381,21 @@ check('editor is the textarea + Write/Preview form with title, status and group'
   assert.match(editorHtml, /># Notes/)
   assert.doesNotMatch(editorHtml, /dsh-kanban-block-input|role="toolbar"|dsh-kanban-edit-title/)
 })
+const sizedEditorHtml = ReactDOMServer.renderToStaticMarkup(
+  React.createElement(internals.ProjectEditor, {
+    initial: { title: 'Draft', notes: '# Notes\n\n- item', status: 'idea', group: 'work' },
+    groups: internals.DEFAULT_GROUPS,
+    t,
+    preserveHeight: 264,
+    onSave: () => {},
+    onCancel: () => {},
+  }),
+)
+check('editing keeps the tile height', () => {
+  assert.match(sizedEditorHtml, /class="dsh-kanban-editor is-sized"/)
+  assert.match(sizedEditorHtml, /style="height:264px"/)
+  assert.doesNotMatch(editorHtml, /height:/)
+})
 const mdViewHtml = ReactDOMServer.renderToStaticMarkup(
   React.createElement(internals.MarkdownView, {
     text: '# One\n\nbody\n\n## Two\n\n- [ ] task',

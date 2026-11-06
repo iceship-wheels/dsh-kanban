@@ -342,7 +342,64 @@ check('groups carry no designed column counts', () => {
 })
 
 // ---------------------------------------------------------------------------
-// 4. Notes tidy tool
+// 4. Editor shortcuts
+// ---------------------------------------------------------------------------
+console.log('\neditor shortcuts')
+const { newlineContinuation, indentLines, wrapInline, linkInline, backspaceListMarker } = internals
+
+check('Enter continues bullets, numbers, task lists, quotes and nesting', () => {
+  const bullet = newlineContinuation('- one', 5, 5)
+  assert.equal(bullet.value, '- one\n- ')
+  assert.equal(bullet.start, 8)
+  assert.equal(newlineContinuation('1. one', 6, 6).value, '1. one\n2. ')
+  assert.equal(newlineContinuation('2) one', 6, 6).value, '2) one\n3) ')
+  assert.equal(newlineContinuation('- [x] done', 10, 10).value, '- [x] done\n- [ ] ')
+  assert.equal(newlineContinuation('> hi', 4, 4).value, '> hi\n> ')
+  assert.equal(newlineContinuation('  - a', 5, 5).value, '  - a\n  - ')
+})
+check('Enter ends a list on an empty item and leaves plain lines alone', () => {
+  assert.equal(newlineContinuation('- ', 2, 2).value, '')
+  assert.equal(newlineContinuation('- [ ] ', 6, 6).value, '')
+  assert.equal(newlineContinuation('> ', 2, 2).value, '')
+  assert.equal(newlineContinuation('hello', 5, 5), null)
+  assert.equal(newlineContinuation('', 0, 0), null)
+})
+check('Tab indents the selected lines and Shift+Tab unindents them', () => {
+  const indent = indentLines('a\nb', 0, 3, false)
+  assert.equal(indent.value, '  a\n  b')
+  assert.equal(indent.start, 2)
+  assert.equal(indent.end, 7)
+  const outdent = indentLines('  a\n  b', 0, 7, true)
+  assert.equal(outdent.value, 'a\nb')
+  assert.equal(outdent.start, 0)
+  assert.equal(outdent.end, 3)
+  assert.equal(indentLines('abc', 1, 1, false).value, '  abc')
+  assert.equal(indentLines('a', 0, 0, true), null)
+})
+check('inline marks toggle around the selection', () => {
+  assert.equal(wrapInline('hi', 0, 2, '**').value, '**hi**')
+  assert.equal(wrapInline('**hi**', 2, 4, '**').value, 'hi')
+  assert.equal(wrapInline('**hi**', 2, 4, '**').start, 0)
+  assert.equal(wrapInline('hi', 0, 2, '*').value, '*hi*')
+  assert.equal(wrapInline('', 0, 0, '`').value, '``')
+  assert.equal(wrapInline('', 0, 0, '`').start, 1)
+})
+check('Ctrl+K wraps a link and selects the placeholder url', () => {
+  const edit = linkInline('docs', 0, 4)
+  assert.equal(edit.value, '[docs](url)')
+  assert.equal(edit.start, 7)
+  assert.equal(edit.end, 10)
+  assert.equal(linkInline('', 0, 0).value, '[](url)')
+})
+check('Backspace removes an empty list marker', () => {
+  assert.equal(backspaceListMarker('- ', 2, 2).value, '')
+  assert.equal(backspaceListMarker('- [ ] ', 6, 6).value, '')
+  assert.equal(backspaceListMarker('- item', 6, 6), null)
+  assert.equal(backspaceListMarker('- ', 1, 2), null)
+})
+
+// ---------------------------------------------------------------------------
+// 5. Notes tidy tool
 // ---------------------------------------------------------------------------
 console.log('\nnotes tidy')
 check('compactListGaps tightens lists separated by blank lines', () => {
@@ -358,7 +415,7 @@ check('compactListGaps leaves already tight lists alone', () => {
 })
 
 // ---------------------------------------------------------------------------
-// 5. Components render
+// 6. Components render
 // ---------------------------------------------------------------------------
 console.log('\ncomponents')
 const t = (key) => key
@@ -561,7 +618,7 @@ check('resolveLoadedBoard prefers a newer mirror only when it must', () => {
 })
 
 // ---------------------------------------------------------------------------
-// 5. apply() wiring into the client tree
+// 7. apply() wiring into the client tree
 // ---------------------------------------------------------------------------
 console.log('\nclient wiring')
 const registrations = []
@@ -614,7 +671,7 @@ check('panel glyph renders at a requested size', () => {
 })
 
 // ---------------------------------------------------------------------------
-// 6. Host route, real HTTP and real board file
+// 8. Host route, real HTTP and real board file
 // ---------------------------------------------------------------------------
 console.log('\nhost route')
 const home = path.join(root, '.tmp', 'test-home')

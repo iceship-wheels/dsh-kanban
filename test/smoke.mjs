@@ -391,12 +391,22 @@ const editorHtml = ReactDOMServer.renderToStaticMarkup(
 )
 check('editor is the textarea + Write/Preview form with title, status and group', () => {
   assert.match(editorHtml, /dsh-kanban-title-input/)
-  assert.match(editorHtml, /<select/)
+  assert.match(editorHtml, /dsh-kanban-status-btn[^"]*dsh-kanban-status is-idea/)
+  assert.match(editorHtml, /dsh-kanban-group-chip[^>]*>Work</)
+  assert.match(editorHtml, /title="cycleStatus"/)
+  assert.match(editorHtml, /title="cycleGroup"/)
+  assert.doesNotMatch(editorHtml, /<select/)
   assert.match(editorHtml, /role="tablist"/)
   assert.match(editorHtml, /aria-selected="true"[^>]*>write</)
   assert.match(editorHtml, /dsh-kanban-textarea/)
   assert.match(editorHtml, /># Notes/)
   assert.doesNotMatch(editorHtml, /dsh-kanban-block-input|role="toolbar"|dsh-kanban-edit-title/)
+})
+check('nextInCycle walks statuses and groups and wraps around', () => {
+  const items = [{ id: 'idea' }, { id: 'active' }, { id: 'paused' }]
+  assert.equal(internals.nextInCycle(items, 'idea').id, 'active')
+  assert.equal(internals.nextInCycle(items, 'paused').id, 'idea')
+  assert.equal(internals.nextInCycle(items, 'unknown').id, 'idea')
 })
 check('editor is a modal with a large notes area', () => {
   assert.match(editorHtml, /class="dsh-kanban-editor-backdrop"/)

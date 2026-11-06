@@ -388,6 +388,11 @@ check('editor is a modal with a large notes area', () => {
   assert.match(editorHtml, /dsh-kanban-editor-body/)
   assert.match(editorHtml, /dsh-kanban-editor-hint/)
 })
+check('editor text uses comfortable GitHub-like markdown typography', () => {
+  assert.match(source, /\.dsh-kanban-textarea \{[^}]*font-size: 14px;[^}]*line-height: 1\.6;[^}]*\}/)
+  assert.match(source, /\.dsh-kanban-editor-body \.dsh-kanban-textarea \{[^}]*padding: 12px 14px;[^}]*\}/)
+  assert.match(source, /\.dsh-kanban-editor-body \.dsh-kanban-preview \.dsh-kanban-md \{ font-size: 14px; line-height: 1\.65; \}/)
+})
 const mdViewHtml = ReactDOMServer.renderToStaticMarkup(
   React.createElement(internals.MarkdownView, {
     text: '# One\n\nbody\n\n## Two\n\n- [ ] task',

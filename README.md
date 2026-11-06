@@ -91,6 +91,7 @@ The board file is kept. Delete `~/.dsh/kanban/board.json` to reset the board.
 npm install --ignore-scripts
 node test/smoke.mjs            # unit, component and live-route tests
 node test/layout-harness.mjs   # writes .tmp/harness-{short,tall}.html
+node test/editor-harness.mjs   # writes .tmp/editor.html (editor typography)
 ```
 
 `lib/client.js` is the browser bundle (loaded through `window.__ModuleLoader__`), and

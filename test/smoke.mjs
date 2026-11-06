@@ -79,6 +79,18 @@ check('patch inserts the plugin row', () => {
   assert.match(patchText, /id:\s*dsh-kanban/)
   assert.match(patchText, new RegExp(`name:\\s*${manifest.name}`))
 })
+check('plugin icon is an SVG DSH can load', () => {
+  assert.equal(manifest.icon, 'icon.svg')
+  const iconPath = manifest.exports['./icon']
+  assert.ok(iconPath, 'package.json exports "./icon"')
+  const file = path.join(root, iconPath)
+  assert.ok(existsSync(file))
+  assert.ok(manifest.files.includes(path.basename(iconPath)))
+  const svg = readFileSync(file, 'utf8')
+  assert.match(svg, /^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg"/)
+  assert.match(svg, /viewBox="0 0 64 64"/)
+  assert.ok(readFileSync(file).length < 256 * 1024)
+})
 
 // ---------------------------------------------------------------------------
 // 2. Browser bundle under a fake module loader

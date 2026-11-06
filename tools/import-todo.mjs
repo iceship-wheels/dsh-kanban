@@ -20,6 +20,7 @@
  */
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import path from 'node:path'
+import { compactListGaps } from './compact-notes.mjs'
 
 const ROOT = path.resolve(import.meta.dirname, '..')
 const TODO_PATH = process.argv[2] ?? path.join(ROOT, 'TODO.md')
@@ -66,7 +67,7 @@ function addTile({ title, notes, group, status }) {
   tiles.push({
     id: nextId(),
     title: shorten(title, 60),
-    notes: notes.trim(),
+    notes: compactListGaps(notes.trim()),
     status,
     group,
     createdAt: now,

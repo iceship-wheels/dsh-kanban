@@ -14,6 +14,7 @@ import { createRequire } from 'node:module'
 import path from 'node:path'
 import vm from 'node:vm'
 import { pathToFileURL } from 'node:url'
+import { compactListGaps } from '../tools/compact-notes.mjs'
 
 const root = path.resolve(import.meta.dirname, '..')
 
@@ -329,7 +330,23 @@ check('groups carry no designed column counts', () => {
 })
 
 // ---------------------------------------------------------------------------
-// 4. Components render
+// 4. Notes tidy tool
+// ---------------------------------------------------------------------------
+console.log('\nnotes tidy')
+check('compactListGaps tightens lists separated by blank lines', () => {
+  assert.equal(compactListGaps('* [x] one\n\n* [ ] two\n\n    * [ ] nested'), '* [x] one\n* [ ] two\n    * [ ] nested')
+})
+check('compactListGaps keeps paragraphs, quotes and fences apart', () => {
+  const text = 'Intro paragraph\n\n- one\n- two\n\n> quote\n\n```\n\n- code\n\n```'
+  assert.equal(compactListGaps(text), text)
+})
+check('compactListGaps leaves already tight lists alone', () => {
+  const text = '- one\n- two\n  - three'
+  assert.equal(compactListGaps(text), text)
+})
+
+// ---------------------------------------------------------------------------
+// 5. Components render
 // ---------------------------------------------------------------------------
 console.log('\ncomponents')
 const t = (key) => key
@@ -389,9 +406,9 @@ check('editor is a modal with a large notes area', () => {
   assert.match(editorHtml, /dsh-kanban-editor-hint/)
 })
 check('editor text uses comfortable GitHub-like markdown typography', () => {
-  assert.match(source, /\.dsh-kanban-textarea \{[^}]*font-size: 14px;[^}]*line-height: 1\.6;[^}]*\}/)
-  assert.match(source, /\.dsh-kanban-editor-body \.dsh-kanban-textarea \{[^}]*padding: 12px 14px;[^}]*\}/)
-  assert.match(source, /\.dsh-kanban-editor-body \.dsh-kanban-preview \.dsh-kanban-md \{ font-size: 14px; line-height: 1\.65; \}/)
+  assert.match(source, /\.dsh-kanban-textarea \{[^}]*font-size: 14px;[^}]*line-height: 1\.5;[^}]*\}/)
+  assert.match(source, /\.dsh-kanban-editor-body \.dsh-kanban-textarea \{[^}]*padding: 10px 12px;[^}]*\}/)
+  assert.match(source, /\.dsh-kanban-editor-body \.dsh-kanban-preview \.dsh-kanban-md \{ font-size: 14px; line-height: 1\.5; \}/)
 })
 const mdViewHtml = ReactDOMServer.renderToStaticMarkup(
   React.createElement(internals.MarkdownView, {

@@ -172,8 +172,9 @@ check('emphasis and code', () => {
 check('lists and interactive task checkboxes', () => {
   assert.match(rendered, /<ul>/)
   assert.match(rendered, /<ol>/)
-  assert.match(rendered, /<input type="checkbox" data-task-index="0" checked>/)
+  assert.match(rendered, /<li class="dsh-kanban-task"><input type="checkbox" data-task-index="0" checked>/)
   assert.match(rendered, /<input type="checkbox" data-task-index="1">/)
+  assert.match(source, /\.dsh-kanban-md li\.dsh-kanban-task \{ list-style: none; \}/)
 })
 check('completed tasks are struck through', () => {
   assert.match(rendered, /<span class="dsh-kanban-task-done">done task<\/span>/)

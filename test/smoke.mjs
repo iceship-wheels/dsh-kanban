@@ -562,19 +562,15 @@ check('page renders header, filters, groups button and loading state', () => {
   assert.match(pageHtml, /dsh-kanban-loading/)
   assert.doesNotMatch(pageHtml, /dsh-kanban-subtitle/)
 })
-check('status filter collects several statuses and "all" selects every one', () => {
-  const { toggleStatusFilter, filterByStatus } = internals
-  assert.equal(toggleStatusFilter([], 'idea').join(','), 'idea')
-  assert.equal(toggleStatusFilter(['idea'], 'active').join(','), 'idea,active')
-  assert.equal(toggleStatusFilter(['idea', 'active'], 'idea').join(','), 'active')
-  assert.equal(toggleStatusFilter(['done'], 'all').join(','), 'idea,active,paused,done')
+check('status filter keeps one status at a time; "all" keeps every status', () => {
   const projects = [{ status: 'idea' }, { status: 'active' }, { status: 'done' }]
-  assert.equal(filterByStatus(projects, []).length, 0)
-  assert.equal(filterByStatus(projects, ['idea', 'active', 'paused', 'done']).length, 3)
-  assert.equal(filterByStatus(projects, ['idea', 'done']).map((project) => project.status).join(','), 'idea,done')
+  assert.equal(internals.filterByStatus(projects, 'all').length, 3)
+  assert.equal(internals.filterByStatus(projects, 'idea').map((project) => project.status).join(','), 'idea')
+  assert.equal(internals.filterByStatus(projects, 'done').length, 1)
+  assert.equal(internals.filterByStatus(projects, 'paused').length, 0)
 })
-check('the "all" chip and every status chip are pressed by default, with no width shift on press', () => {
-  assert.equal((pageHtml.match(/aria-pressed="true"/g) ?? []).length, 5)
+check('only one filter chip is pressed at a time, with no width shift on press', () => {
+  assert.equal((pageHtml.match(/aria-pressed="true"/g) ?? []).length, 1)
   assert.doesNotMatch(source, /\.dsh-kanban-chip\[aria-pressed="true"\] \{[^}]*font-weight/)
 })
 check('normalizeBoard rewrites list indentation to two spaces per level', () => {

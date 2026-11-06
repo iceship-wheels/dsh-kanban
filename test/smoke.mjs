@@ -496,6 +496,16 @@ check('page renders header, filters, groups button and loading state', () => {
   assert.match(pageHtml, /dsh-kanban-loading/)
   assert.doesNotMatch(pageHtml, /dsh-kanban-subtitle/)
 })
+check('status filter collects several statuses and "all" clears them', () => {
+  const { toggleStatusFilter, filterByStatus } = internals
+  assert.equal(toggleStatusFilter([], 'idea').join(','), 'idea')
+  assert.equal(toggleStatusFilter(['idea'], 'active').join(','), 'idea,active')
+  assert.equal(toggleStatusFilter(['idea', 'active'], 'idea').join(','), 'active')
+  assert.equal(toggleStatusFilter(['done'], 'all').length, 0)
+  const projects = [{ status: 'idea' }, { status: 'active' }, { status: 'done' }]
+  assert.equal(filterByStatus(projects, []).length, 3)
+  assert.equal(filterByStatus(projects, ['idea', 'done']).map((project) => project.status).join(','), 'idea,done')
+})
 check('normalizeBoard fills the starter groups for an old board', () => {
   const board = internals.normalizeBoard({ version: 1, projects: [{ id: 'a', title: 'A', notes: 'n', status: 'done' }] })
   assert.equal(board.version, 2)

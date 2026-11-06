@@ -397,6 +397,14 @@ check('Backspace removes an empty list marker', () => {
   assert.equal(backspaceListMarker('- item', 6, 6), null)
   assert.equal(backspaceListMarker('- ', 1, 2), null)
 })
+check('Shift+Tab clears a list marker that is already at the left margin', () => {
+  assert.equal(indentLines('* [ ] ', 0, 0, true).value, '')
+  assert.equal(indentLines('* [ ] ', 0, 0, true).start, 0)
+  assert.equal(indentLines('- ', 0, 0, true).value, '')
+  assert.equal(indentLines('1. ', 0, 0, true).value, '')
+  assert.equal(indentLines('  * [ ] ', 0, 0, true).value, '* [ ] ')
+  assert.equal(indentLines('* item', 0, 0, true), null)
+})
 
 // ---------------------------------------------------------------------------
 // 5. Notes tidy tool
@@ -567,6 +575,12 @@ check('status filter collects several statuses and "all" selects every one', () 
 check('the "all" chip and every status chip are pressed by default, with no width shift on press', () => {
   assert.equal((pageHtml.match(/aria-pressed="true"/g) ?? []).length, 5)
   assert.doesNotMatch(source, /\.dsh-kanban-chip\[aria-pressed="true"\] \{[^}]*font-weight/)
+})
+check('normalizeBoard rewrites list indentation to two spaces per level', () => {
+  const board = internals.normalizeBoard({
+    projects: [{ id: 'indent', title: 'Indent', notes: '* a\n    * b\n        * c\n\n```\n    * keep\n```' }],
+  })
+  assert.equal(board.projects[0].notes, '* a\n  * b\n    * c\n\n```\n    * keep\n```')
 })
 check('normalizeBoard fills the starter groups for an old board', () => {
   const board = internals.normalizeBoard({ version: 1, projects: [{ id: 'a', title: 'A', notes: 'n', status: 'done' }] })
@@ -781,6 +795,18 @@ await checkAsync('a version-1 board migrates on write', async () => {
   assert.equal(payload.board.version, 2)
   assert.equal(payload.board.groups.length, 3)
   assert.equal(payload.board.projects[0].group, 'others')
+})
+await checkAsync('list indentation is normalized to two spaces per level on write and read', async () => {
+  const notes = '* a\n    * b\n        * c\n            * d'
+  const expected = '* a\n  * b\n    * c\n      * d'
+  const response = await jsonPost('/dsh-kanban/api/board', { version: 2, projects: [{ id: 'indent', title: 'Indent', notes }] })
+  assert.equal(response.status, 200)
+  const payload = await response.json()
+  assert.equal(payload.board.projects[0].notes, expected)
+  const stored = JSON.parse(readFileSync(path.join(home, 'kanban', 'board.json'), 'utf8'))
+  assert.equal(stored.projects[0].notes, expected)
+  const read = await (await fetch(base + '/dsh-kanban/api/board')).json()
+  assert.equal(read.board.projects[0].notes, expected)
 })
 await checkAsync('GET reports the stored timestamp used for mirror resolution', async () => {
   const first = await (await fetch(base + '/dsh-kanban/api/board')).json()

@@ -7,11 +7,10 @@ key to move between the snapshots available in `weekly/`.
 ## What it shows
 
 - The snapshot week and its inclusive date range, plus the generation time.
-- This week's board total with status composition (idea / active / paused / done) and
-  previous-week deltas.
-- Finished, new, cleared and touched counts, each compared with the previous snapshot.
+- This week's board total with status composition (idea / active / paused / done).
+- Finished, new, archived and touched counts.
 - The completed projects with their group and last-edit date.
-- A compact bar chart of finished / new / cleared / touched, with the previous week
+- A compact bar chart of finished / new / archived / touched, with the previous week
   beside the current one.
 
 ## Data source

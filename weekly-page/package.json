@@ -1,6 +1,6 @@
 {
   "name": "@dsh-local/view-959dc1ec-8fb5-4e2b-872b-151bfde38efb",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "private": true,
   "description": "A weekly kanban snapshot page in the sidebar, read from the weekly/*.md files of the workspace, with previous/next week navigation.",
   "type": "module",

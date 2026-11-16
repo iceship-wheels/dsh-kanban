@@ -62,7 +62,7 @@ window.__ModuleLoader__.load({
 				board: "Board",
 				finished: "Finished",
 				new: "New",
-				cleared: "Cleared",
+				cleared: "Archived",
 				touched: "Touched",
 				projects: "projects",
 				statusIdea: "Idea",
@@ -98,7 +98,7 @@ window.__ModuleLoader__.load({
 				board: "看板",
 				finished: "本周完成",
 				new: "新增",
-				cleared: "已清理",
+				cleared: "已归档",
 				touched: "有改动",
 				projects: "个项目",
 				statusIdea: "想法",
@@ -230,18 +230,6 @@ window.__ModuleLoader__.load({
   font-variant-numeric: tabular-nums;
 }
 .dsh-weekly-stat-unit { font-size: 11.5px; font-weight: 400; letter-spacing: 0; color: var(--dsw-alias-label-secondary, #6b7280); }
-.dsh-weekly-delta {
-  display: inline-flex;
-  align-items: center;
-  height: 18px;
-  margin-top: 7px;
-  padding: 0 7px;
-  border-radius: 999px;
-  background: var(--dsw-alias-interactive-bg-hover, rgba(15, 23, 42, 0.06));
-  color: var(--dsw-alias-label-secondary, #6b7280);
-  font-size: 11px;
-  font-variant-numeric: tabular-nums;
-}
 
 .dsh-weekly-status { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 0 22px; }
 .dsh-weekly-status-item {
@@ -261,7 +249,6 @@ window.__ModuleLoader__.load({
 .dsh-weekly-status-dot.is-done { background: var(--dsw-alias-state-success-primary, #10b981); }
 .dsh-weekly-status-name { color: var(--dsw-alias-label-secondary, #6b7280); }
 .dsh-weekly-status-value { font-weight: 600; font-variant-numeric: tabular-nums; }
-.dsh-weekly-status-delta { font-size: 11px; color: var(--dsw-alias-label-secondary, #6b7280); font-variant-numeric: tabular-nums; }
 
 .dsh-weekly-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.9fr); gap: 12px; align-items: start; }
 .dsh-weekly-card {
@@ -530,8 +517,7 @@ window.__ModuleLoader__.load({
 			return value === null ? "—" : String(value);
 		}
 
-		function StatCard({ label, value, previous, unit, compare, t }) {
-			const delta = deltaOf(value, previous);
+		function StatCard({ label, value, unit }) {
 			return h(
 				"div",
 				{ className: "dsh-weekly-stat" },
@@ -542,17 +528,6 @@ window.__ModuleLoader__.load({
 					valueText(value),
 					unit !== undefined ? h("span", { className: "dsh-weekly-stat-unit" }, unit) : null,
 				),
-				delta === null
-					? null
-					: h(
-							"span",
-							{
-								className: "dsh-weekly-delta",
-								title: compare,
-								"aria-label": t("deltaAria", { label, delta: delta.text, compare }),
-							},
-							delta.text,
-						),
 			);
 		}
 
@@ -874,14 +849,12 @@ window.__ModuleLoader__.load({
 						"div",
 						{ className: "dsh-weekly-status" },
 						statuses.map((item) => {
-							const delta = deltaOf(item.value, item.previous);
 							return h(
 								"div",
 								{ key: item.key, className: "dsh-weekly-status-item" },
 								h("span", { className: "dsh-weekly-status-dot is-" + item.key }),
 								h("span", { className: "dsh-weekly-status-name" }, item.label),
 								h("span", { className: "dsh-weekly-status-value" }, valueText(item.value)),
-								delta === null ? null : h("span", { className: "dsh-weekly-status-delta" }, delta.text),
 							);
 						}),
 					),

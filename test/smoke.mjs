@@ -364,6 +364,12 @@ check('allocateColumns shares a limited column budget proportionally', () => {
 check('allocateColumns never drops a group below one column', () => {
   assert.equal(JSON.stringify(internals.allocateColumns({ a: 1, b: 1 }, 1)), JSON.stringify({ a: 1, b: 1 }))
 })
+check('group tracks cap the tile width on wide windows', () => {
+  // A single column: at least 320px wide, but never wider than the cap.
+  assert.equal(internals.groupTrack(1), 'minmax(320px, 480px)')
+  // Columns scale together: the cap is per column, not per group.
+  assert.equal(internals.groupTrack(3), 'minmax(960px, 1440px)')
+})
 check('groups carry no designed column counts', () => {
   assert.equal('maxColumns' in internals.DEFAULT_GROUPS[0], false)
 })

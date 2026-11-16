@@ -99,7 +99,7 @@ function page({ height, workColumns, label }) {
 <body>
 <div class="dsh-kanban-root" style="height:100%;width:1420px;box-sizing:border-box">
   <div class="dsh-kanban-scroll" style="height:${height}px">
-    <div class="dsh-kanban-groups-row" style="display:grid;grid-template-columns:${columns.map((count) => String(count) + 'fr').join(' ')};gap:16px;align-items:start">
+    <div class="dsh-kanban-groups-row" style="display:grid;grid-template-columns:${columns.map((count) => internals.groupTrack(count)).join(' ')};gap:16px;align-items:start">
       ${html}
     </div>
   </div>

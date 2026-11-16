@@ -8,7 +8,7 @@
  * Run: node test/smoke.mjs
  */
 import assert from 'node:assert/strict'
-import { readFileSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { readFileSync, readdirSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import http from 'node:http'
 import { createRequire } from 'node:module'
 import path from 'node:path'
@@ -355,12 +355,14 @@ check('Enter continues bullets, numbers, task lists, quotes and nesting', () => 
   assert.equal(newlineContinuation('1. one', 6, 6).value, '1. one\n2. ')
   assert.equal(newlineContinuation('2) one', 6, 6).value, '2) one\n3) ')
   assert.equal(newlineContinuation('- [x] done', 10, 10).value, '- [x] done\n- [ ] ')
+  assert.equal(newlineContinuation('- [] item', 10, 10).value, '- [] item\n- [ ] ')
   assert.equal(newlineContinuation('> hi', 4, 4).value, '> hi\n> ')
   assert.equal(newlineContinuation('  - a', 5, 5).value, '  - a\n  - ')
 })
 check('Enter ends a list on an empty item and leaves plain lines alone', () => {
   assert.equal(newlineContinuation('- ', 2, 2).value, '')
   assert.equal(newlineContinuation('- [ ] ', 6, 6).value, '')
+  assert.equal(newlineContinuation('- [] ', 5, 5).value, '')
   assert.equal(newlineContinuation('> ', 2, 2).value, '')
   assert.equal(newlineContinuation('hello', 5, 5), null)
   assert.equal(newlineContinuation('', 0, 0), null)
@@ -395,12 +397,14 @@ check('Ctrl+K wraps a link and selects the placeholder url', () => {
 check('Backspace removes an empty list marker', () => {
   assert.equal(backspaceListMarker('- ', 2, 2).value, '')
   assert.equal(backspaceListMarker('- [ ] ', 6, 6).value, '')
+  assert.equal(backspaceListMarker('- [] ', 5, 5).value, '')
   assert.equal(backspaceListMarker('- item', 6, 6), null)
   assert.equal(backspaceListMarker('- ', 1, 2), null)
 })
 check('Shift+Tab clears a list marker that is already at the left margin', () => {
   assert.equal(indentLines('* [ ] ', 0, 0, true).value, '')
   assert.equal(indentLines('* [ ] ', 0, 0, true).start, 0)
+  assert.equal(indentLines('- [] ', 0, 0, true).value, '')
   assert.equal(indentLines('- ', 0, 0, true).value, '')
   assert.equal(indentLines('1. ', 0, 0, true).value, '')
   assert.equal(indentLines('  * [ ] ', 0, 0, true).value, '* [ ] ')
@@ -627,6 +631,18 @@ check('resolveLoadedBoard prefers a newer mirror only when it must', () => {
   assert.equal(migration.hostOutdated, false)
   assert.equal(migration.board.projects[0].group, 'work')
 })
+check('dropArchivedProjects removes only projects missing from the saved board', () => {
+  const { dropArchivedProjects } = internals
+  const board = { projects: [{ id: 'kept' }, { id: 'archived' }, { id: 'new' }] }
+  const sent = [{ id: 'kept' }, { id: 'archived' }]
+  const next = dropArchivedProjects(board, sent, [{ id: 'kept' }, { id: 'new' }])
+  assert.equal(next.projects.map((project) => project.id).join(','), 'kept,new')
+  // No tombstones: the same board object is returned, so React skips a render.
+  assert.equal(dropArchivedProjects(board, sent, [{ id: 'kept' }, { id: 'archived' }, { id: 'new' }]), board)
+  // A project added after the payload was sent is never dropped just because
+  // it is absent from the host response.
+  assert.equal(dropArchivedProjects(board, [{ id: 'kept' }], [{ id: 'kept' }]).projects.length, 3)
+})
 
 // ---------------------------------------------------------------------------
 // 7. apply() wiring into the client tree
@@ -689,6 +705,9 @@ const home = path.join(root, '.tmp', 'test-home')
 rmSync(home, { recursive: true, force: true })
 mkdirSync(home, { recursive: true })
 process.env.DSH_HOME = home
+// The tests drive the tidy-up explicitly; disable its timers and lazy GET sweep
+// so the board route assertions stay deterministic.
+process.env.DSH_KANBAN_AUTOMATION = 'off'
 const host = await import(pathToFileURL(path.join(root, manifest.main)).href)
 let port = 0
 const hostCtx = {
@@ -862,6 +881,195 @@ await checkAsync('oversized bodies are consistently rejected with 413', async ()
   }
   // A rejected oversized request must not poison the route for later requests.
   assert.equal((await fetch(base + '/dsh-kanban/api/health')).status, 200)
+})
+
+// ---------------------------------------------------------------------------
+// 9. Daily tidy-up into weekly records
+// ---------------------------------------------------------------------------
+console.log('\ndaily tidy-up')
+const {
+  runDailySweep,
+  isoWeekKey,
+  localDateKey,
+  staleDoneProjects,
+  normalizeAutomationState,
+  automationEnabled,
+  archiveEntryMarkdown,
+  DONE_RETENTION_DAYS,
+} = host
+const kanbanHome = path.join(home, 'kanban')
+const boardFile = path.join(kanbanHome, 'board.json')
+const stateFile = path.join(kanbanHome, 'automation.json')
+const DAY = 24 * 60 * 60 * 1000
+const isoAt = (date) => date.toISOString()
+const writeBoardFixture = (projects) => {
+  mkdirSync(kanbanHome, { recursive: true })
+  writeFileSync(boardFile, JSON.stringify({ version: 2, groups: [{ id: 'work', title: 'Work' }], projects }), 'utf8')
+}
+const readBoardFixture = () => JSON.parse(readFileSync(boardFile, 'utf8'))
+const markerCount = (text) => (text.match(/<!-- dsh-kanban:project id=/g) ?? []).length
+
+check('ISO weeks and local days are computed on local calendar dates', () => {
+  assert.equal(isoWeekKey(new Date(2026, 10, 6)), '2026-W45')
+  assert.equal(isoWeekKey(new Date(2025, 11, 29)), '2026-W01') // Monday of ISO week 1
+  assert.equal(isoWeekKey(new Date(2027, 0, 3)), '2026-W53') // Sunday of the last ISO week
+  assert.equal(localDateKey(new Date(2026, 10, 6, 23, 59, 59)), '2026-11-06')
+  assert.equal(DONE_RETENTION_DAYS, 3)
+})
+check('staleDoneProjects only takes done projects past the retention window', () => {
+  const now = new Date(2026, 10, 6, 12, 0, 0)
+  const at = (days) => isoAt(new Date(now.getTime() - days * DAY))
+  const projects = [
+    { id: 'exact', status: 'done', updatedAt: at(3) },
+    { id: 'old', status: 'done', updatedAt: at(9) },
+    { id: 'fresh', status: 'done', updatedAt: at(2.5) },
+    { id: 'active', status: 'active', updatedAt: at(9) },
+    { id: 'broken', status: 'done', updatedAt: 'not-a-date' },
+  ]
+  assert.deepEqual(staleDoneProjects({ projects }, now).map((project) => project.id), ['exact', 'old'])
+  assert.equal(staleDoneProjects({ projects }, now, 10).length, 0)
+})
+check('archive entries preserve the last edit time and the content', () => {
+  const text = archiveEntryMarkdown(
+    {
+      id: 'a1',
+      title: 'Title\nwith  spaces',
+      notes: 'body text',
+      status: 'done',
+      group: 'work',
+      createdAt: '2026-11-01T00:00:00.000Z',
+      updatedAt: '2026-11-02T00:00:00.000Z',
+    },
+    '2026-11-06T00:00:00.000Z',
+  )
+  assert.match(text, /^<!-- dsh-kanban:project id=a1 -->/)
+  assert.match(text, /## Title with spaces/)
+  assert.ok(text.includes('- Last edited: 2026-11-02T00:00:00.000Z'))
+  assert.match(text, /\nbody text\n$/)
+})
+check('normalizeAutomationState drops invalid state instead of throwing', () => {
+  const state = normalizeAutomationState({
+    lastSweepDate: 'yesterday',
+    archived: [
+      { id: 'ok', at: '2026-11-01T00:00:00.000Z' },
+      { id: 'ok', at: '2026-11-02T00:00:00.000Z' },
+      { id: 'bad id!', at: '2026-11-01T00:00:00.000Z' },
+      { id: 'no-time' },
+      null,
+    ],
+  })
+  assert.equal(state.lastSweepDate, null)
+  assert.deepEqual(state.archived, [{ id: 'ok', at: '2026-11-01T00:00:00.000Z' }])
+  assert.equal(normalizeAutomationState(null).archived.length, 0)
+})
+check('DSH_KANBAN_AUTOMATION=off disables the tidy-up', () => {
+  assert.equal(automationEnabled({}), true)
+  assert.equal(automationEnabled({ DSH_KANBAN_AUTOMATION: 'on' }), true)
+  for (const value of ['off', '0', 'false', 'disabled', ' OFF ']) {
+    assert.equal(automationEnabled({ DSH_KANBAN_AUTOMATION: value }), false)
+  }
+})
+await checkAsync('a sweep moves stale done projects into the week record', async () => {
+  const now = new Date(2026, 10, 6, 12, 0, 0)
+  const at = (days) => isoAt(new Date(now.getTime() - days * DAY))
+  const notes = '## Result\n\n- [x] shipped\n\nPlus a **paragraph**.'
+  writeBoardFixture([
+    { id: 'stale-done', title: 'Stale done', notes, status: 'done', group: 'work', createdAt: at(12), updatedAt: at(4) },
+    { id: 'fresh-done', title: 'Fresh done', notes: 'recent', status: 'done', group: 'work', createdAt: at(12), updatedAt: at(1) },
+    { id: 'stale-active', title: 'Stale active', notes: '', status: 'active', group: 'work', createdAt: at(12), updatedAt: at(10) },
+  ])
+  const result = await runDailySweep(boardFile, { now })
+  assert.equal(result.ran, true)
+  assert.equal(result.archived, 1)
+  assert.equal(result.weekKey, '2026-W45')
+  assert.equal(result.archiveFile, path.join(kanbanHome, 'archive', '2026-W45.md'))
+  assert.deepEqual(readBoardFixture().projects.map((project) => project.id), ['fresh-done', 'stale-active'])
+  const record = readFileSync(result.archiveFile, 'utf8')
+  assert.match(record, /^# Done projects cleared — 2026-W45/)
+  assert.match(record, /<!-- dsh-kanban:project id=stale-done -->/)
+  assert.match(record, /## Stale done/)
+  assert.ok(record.includes(`- Last edited: ${at(4)}`))
+  assert.ok(record.includes(`- Created: ${at(12)}`))
+  assert.match(record, /- \[x\] shipped/)
+  assert.match(record, /Plus a \*\*paragraph\*\*\./)
+  const state = JSON.parse(readFileSync(stateFile, 'utf8'))
+  assert.equal(state.lastSweepDate, '2026-11-06')
+  assert.deepEqual(state.archived.map((entry) => entry.id), ['stale-done'])
+})
+await checkAsync('a second run on the same local day is a no-op', async () => {
+  const again = await runDailySweep(boardFile, { now: new Date(2026, 10, 6, 23, 30, 0) })
+  assert.equal(again.ran, false)
+  assert.equal(again.archived, 0)
+  assert.equal(markerCount(readFileSync(path.join(kanbanHome, 'archive', '2026-W45.md'), 'utf8')), 1)
+})
+await checkAsync('a later day appends to the same weekly record', async () => {
+  const now = new Date(2026, 10, 7, 9, 0, 0)
+  const at = (days) => isoAt(new Date(now.getTime() - days * DAY))
+  writeBoardFixture([
+    { id: 'fresh-done', title: 'Fresh done', notes: 'recent', status: 'done', group: 'work', createdAt: at(2), updatedAt: at(1) },
+    { id: 'stale-two', title: 'Second stale', notes: 'second', status: 'done', group: 'work', createdAt: at(8), updatedAt: at(4) },
+  ])
+  const result = await runDailySweep(boardFile, { now })
+  assert.equal(result.ran, true)
+  assert.equal(result.archived, 1)
+  assert.equal(result.weekKey, '2026-W45')
+  const record = readFileSync(result.archiveFile, 'utf8')
+  assert.equal(markerCount(record), 2)
+  assert.match(record, /## Second stale/)
+})
+await checkAsync('an already-recorded project is still cleared and never duplicated', async () => {
+  const now = new Date(2026, 10, 8, 9, 0, 0)
+  const at = (days) => isoAt(new Date(now.getTime() - days * DAY))
+  // Simulate a crash after the record was written but before the board was saved.
+  writeBoardFixture([
+    { id: 'fresh-done', title: 'Fresh done', notes: 'recent', status: 'done', group: 'work', createdAt: at(2), updatedAt: at(1) },
+    { id: 'stale-done', title: 'Stale done', notes: '## Result\n\n- [x] shipped', status: 'done', group: 'work', createdAt: at(14), updatedAt: at(6) },
+  ])
+  const result = await runDailySweep(boardFile, { now })
+  assert.equal(result.archived, 0)
+  assert.equal(readBoardFixture().projects.some((project) => project.id === 'stale-done'), false)
+  assert.equal(markerCount(readFileSync(path.join(kanbanHome, 'archive', '2026-W45.md'), 'utf8')), 2)
+})
+await checkAsync('an open page cannot write an archived project back', async () => {
+  const now = new Date(2026, 10, 8, 10, 0, 0)
+  const at = (days) => isoAt(new Date(now.getTime() - days * DAY))
+  writeBoardFixture([
+    { id: 'fresh-done', title: 'Fresh done', notes: 'recent', status: 'done', group: 'work', createdAt: at(2), updatedAt: at(1) },
+    { id: 'stale-done', title: 'Stale done', notes: 'resurrected by an old page', status: 'done', group: 'work', createdAt: at(14), updatedAt: at(6) },
+  ])
+  const response = await jsonPost('/dsh-kanban/api/board', readBoardFixture())
+  const result = await response.json()
+  assert.equal(result.ok, true)
+  assert.equal(result.archived, 1)
+  assert.deepEqual(result.board.projects.map((project) => project.id), ['fresh-done'])
+  assert.equal(readBoardFixture().projects.some((project) => project.id === 'stale-done'), false)
+})
+await checkAsync('opening the board catches up on a missed tidy-up day', async () => {
+  const now = new Date()
+  const at = (days) => isoAt(new Date(now.getTime() - days * DAY))
+  // Pretend the host slept through the days: the day gate is stale, and a
+  // project went done long enough ago to be cleared.
+  const state = JSON.parse(readFileSync(stateFile, 'utf8'))
+  state.lastSweepDate = '2000-01-01'
+  writeFileSync(stateFile, JSON.stringify(state), 'utf8')
+  writeBoardFixture([
+    { id: 'missed-done', title: 'Missed done', notes: 'missed record', status: 'done', group: 'work', createdAt: at(9), updatedAt: at(5) },
+    { id: 'fresh-done', title: 'Fresh done', notes: '', status: 'done', group: 'work', createdAt: at(9), updatedAt: at(0) },
+  ])
+  process.env.DSH_KANBAN_AUTOMATION = 'on'
+  try {
+    const payload = await (await fetch(base + '/dsh-kanban/api/board')).json()
+    assert.equal(payload.ok, true)
+    assert.deepEqual(payload.board.projects.map((project) => project.id), ['fresh-done'])
+  } finally {
+    process.env.DSH_KANBAN_AUTOMATION = 'off'
+  }
+  const archiveDir = path.join(kanbanHome, 'archive')
+  const records = readdirSync(archiveDir)
+    .map((name) => readFileSync(path.join(archiveDir, name), 'utf8'))
+    .join('\n')
+  assert.match(records, /<!-- dsh-kanban:project id=missed-done -->/)
+  assert.notEqual(JSON.parse(readFileSync(stateFile, 'utf8')).lastSweepDate, '2000-01-01')
 })
 
 const closed = new Promise((resolve) => server.close(resolve))

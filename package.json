@@ -1,6 +1,6 @@
 {
   "name": "dsh-plugin-kanban",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A project kanban board for the DSH sidebar: markdown tiles, dynamic heights, and a masonry layout that adapts to the window.",
   "type": "module",
   "main": "lib/index.js",

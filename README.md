@@ -50,6 +50,31 @@ persisted on the next host restart.
 3. Header has **Groups** (rename/add/remove groups) and status filters.
 4. The board is saved to `$DSH_HOME/kanban/board.json` (`~/.dsh/kanban/board.json` by
    default). Back up that file before upgrading if the board matters.
+5. Finished projects that sit in **done** for 3 days without an edit move to a
+   weekly markdown record under `$DSH_HOME/kanban/archive/` (see below).
+
+## Automatic tidy-up
+
+While the Host half runs, the board tidies itself once per local day:
+
+- A project that stays in **done** for 3 days without an edit (measured from its
+  `updatedAt`) is cleared from the board and appended to the current week's
+  record.
+- Records are markdown files in `$DSH_HOME/kanban/archive/`, one per ISO week
+  (`2026-W45.md`). Each entry carries the title, the last edit time, creation
+  time, group, archive time and the full notes, so the file is a weekly log of
+  finished work. Entries are append-only: a retried sweep never records the same
+  project twice.
+- The check runs when the Host starts, every 30 minutes, and whenever the board
+  is opened. It runs at most once per local day; a day missed while DeepSeek
+  Harness was closed is caught up on the next start.
+- `$DSH_HOME/kanban/automation.json` remembers the last run and the archived
+  project ids. The ids act as tombstones, so a browser that still holds the old
+  board cannot write a cleared project back on its next save.
+- Set `DSH_KANBAN_AUTOMATION=off` (also `0`, `false`, `disabled`) in the Host
+  environment before starting DeepSeek Harness to turn the tidy-up off.
+- The archive is plain markdown: read it, edit it, or back it up outside DSH.
+  Projects in other statuses are never touched.
 
 ## Upgrade
 

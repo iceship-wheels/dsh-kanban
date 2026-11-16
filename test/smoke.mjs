@@ -195,6 +195,32 @@ check('toggleTask addresses nested tasks in document order', () => {
   assert.match(internals.toggleTask(source, 1), /  - \[ \] child two/)
   assert.match(internals.toggleTask(source, 2), /- \[x\] top two/)
 })
+check('a bare [] is accepted as an open task', () => {
+  const html = internals.renderMarkdown('- [] 交付说明\n- [ ] 标准写法\n- [x] 已完成')
+  assert.match(html, /<li class="dsh-kanban-task"><input type="checkbox" data-task-index="0"> 交付说明<\/li>/)
+  assert.match(html, /<input type="checkbox" data-task-index="1"> 标准写法/)
+  assert.match(html, /<input type="checkbox" data-task-index="2" checked> <span class="dsh-kanban-task-done">已完成<\/span>/)
+  assert.doesNotMatch(html, /\[\]/)
+})
+check('task indexes count bare [] items too', () => {
+  const html = internals.renderMarkdown('1. [] first\n2. [x] second')
+  assert.match(html, /<ol><li class="dsh-kanban-task"><input type="checkbox" data-task-index="0"> first<\/li>/)
+  assert.match(html, /<input type="checkbox" data-task-index="1" checked>/)
+})
+check('a list item that starts with a link is not a task', () => {
+  const html = internals.renderMarkdown('- [](https://example.com)\n- [] ')
+  assert.match(html, /<a href="https:\/\/example.com"[^>]*><\/a>/)
+  assert.match(html, /data-task-index="0"> <\/li>/)
+  assert.equal((html.match(/<input type="checkbox"/g) ?? []).length, 1)
+})
+check('toggleTask handles bare [] markers canonically', () => {
+  const source = '- before\n- [] open\n- [] second'
+  const checked = internals.toggleTask(source, 0)
+  assert.equal(checked, '- before\n- [x] open\n- [] second')
+  const unchecked = internals.toggleTask(checked, 0)
+  assert.equal(unchecked, '- before\n- [ ] open\n- [] second')
+  assert.equal(internals.toggleTask(source, 1), '- before\n- [] open\n- [x] second')
+})
 check('fenced code is escaped', () => assert.match(rendered, /<pre><code class="language-js">const x = 1 &lt; 2 &amp;&amp; 3 &gt; 2;<\/code><\/pre>/))
 check('blockquote, table, hr', () => {
   assert.match(rendered, /<blockquote>/)

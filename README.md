@@ -76,6 +76,14 @@ While the Host half runs, the board tidies itself once per local day:
 - The archive is plain markdown: read it, edit it, or back it up outside DSH.
   Projects in other statuses are never touched.
 
+## Weekly page
+
+`weekly-page/` is a companion client plugin for the weekly progress snapshots. It reads
+the `weekly/YYYY-Www.md` files of this workspace, shows the newest week, and moves
+between weeks with the **‹ / ›** buttons in its header. It is installed separately from
+the board bundle (linked into the `desktop` profile as
+`@dsh-local/view-959dc1ec-…`) and never writes a file.
+
 ## Upgrade
 
 ```bash

@@ -1,0 +1,5 @@
+- insert:
+    - id: "@dsh-local/view-959dc1ec-8fb5-4e2b-872b-151bfde38efb:weekly-snapshot"
+      name: "@dsh-local/view-959dc1ec-8fb5-4e2b-872b-151bfde38efb"
+      config:
+        workspace: "C:/Files/Repos/dsh-kanban"

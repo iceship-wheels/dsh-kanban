@@ -7,11 +7,9 @@ key to move between the snapshots available in `weekly/`.
 ## What it shows
 
 - The snapshot week and its inclusive date range, plus the generation time.
-- This week's board total with status composition (idea / active / paused / done).
-- Finished, new, archived and touched counts.
+- One summary line: projects, finished, new, archived and touched.
 - The completed projects with their group and last-edit date.
-- A compact bar chart of finished / new / archived / touched, with the previous week
-  beside the current one.
+- A compact bar chart of finished / new / archived / touched.
 
 ## Data source
 

@@ -232,6 +232,18 @@ window.__ModuleLoader__.load({
 .dsh-weekly-stat-unit { font-size: 11.5px; font-weight: 400; letter-spacing: 0; color: var(--dsw-alias-label-secondary, #6b7280); }
 
 .dsh-weekly-status { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 0 22px; }
+.dsh-weekly-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  padding: 4px 0 22px;
+  font-size: 13px;
+}
+.dsh-weekly-summary-item { display: inline-flex; align-items: baseline; gap: 5px; }
+.dsh-weekly-summary-value { font-size: 15px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.dsh-weekly-summary-label { color: var(--dsw-alias-label-secondary, #6b7280); }
+.dsh-weekly-summary-sep { color: var(--dsw-alias-label-tertiary, #9ca3af); }
 .dsh-weekly-status-item {
   display: inline-flex;
   align-items: center;
@@ -290,7 +302,7 @@ window.__ModuleLoader__.load({
   display: flex;
   align-items: flex-end;
   gap: 8px;
-  height: 118px;
+  height: 96px;
   padding: 0 4px;
   border-bottom: 1px solid var(--dsw-alias-border-l2, rgba(15, 23, 42, 0.08));
 }
@@ -572,17 +584,15 @@ window.__ModuleLoader__.load({
 		}
 
 		function ActivityChart({ data, t }) {
-			const previous = data.previous;
 			const metrics = [
-				{ key: "finished", label: t("finished"), current: data.counts.finished, previous: previous === null ? null : previous.counts.finished },
-				{ key: "new", label: t("new"), current: data.counts.new, previous: previous === null ? null : previous.counts.new },
-				{ key: "cleared", label: t("cleared"), current: data.counts.cleared, previous: previous === null ? null : previous.counts.cleared },
-				{ key: "touched", label: t("touched"), current: data.counts.touched, previous: previous === null ? null : previous.counts.touched },
+				{ key: "finished", label: t("finished"), current: data.counts.finished },
+				{ key: "new", label: t("new"), current: data.counts.new },
+				{ key: "cleared", label: t("cleared"), current: data.counts.cleared },
+				{ key: "touched", label: t("touched"), current: data.counts.touched },
 			];
 			let maximum = 1;
 			for (const metric of metrics) {
 				if (metric.current !== null) maximum = Math.max(maximum, metric.current);
-				if (metric.previous !== null) maximum = Math.max(maximum, metric.previous);
 			}
 			const barStyle = (value) => (value === null ? null : { height: value <= 0 ? "2%" : String(Math.max(4, (value / maximum) * 100)) + "%" });
 			return h(
@@ -592,14 +602,6 @@ window.__ModuleLoader__.load({
 					"div",
 					{ className: "dsh-weekly-card-head" },
 					h("h2", { id: "dsh-weekly-activity-title", className: "dsh-weekly-card-title" }, t("activity")),
-					h(
-						"div",
-						{ className: "dsh-weekly-legend" },
-						h("span", { className: "dsh-weekly-legend-item" }, h("span", { className: "dsh-weekly-swatch is-current" }), t("thisWeek")),
-						previous !== null
-							? h("span", { className: "dsh-weekly-legend-item" }, h("span", { className: "dsh-weekly-swatch is-previous" }), t("lastWeek"))
-							: null,
-					),
 				),
 				h(
 					"div",
@@ -620,7 +622,6 @@ window.__ModuleLoader__.load({
 							h(
 								"div",
 								{ key: metric.key, className: "dsh-weekly-bar-pair" },
-								barStyle(metric.previous) === null ? null : h("div", { className: "dsh-weekly-bar is-previous", style: barStyle(metric.previous) }),
 								barStyle(metric.current) === null ? null : h("div", { className: "dsh-weekly-bar is-current", style: barStyle(metric.current) }),
 							),
 						),
@@ -699,21 +700,13 @@ window.__ModuleLoader__.load({
 				return () => document.removeEventListener("visibilitychange", onVisibility);
 			}, [load]);
 
-			const previous = data.previous;
-			const compare = previous === null ? t("noPrevious") : t("compare", { week: previous.week });
 			const board = data.board;
-			const stats = [
-				{ key: "board", label: t("board"), value: board.total, previous: previous === null ? null : previous.board.total, unit: t("projects") },
-				{ key: "finished", label: t("finished"), value: data.counts.finished, previous: previous === null ? null : previous.counts.finished },
-				{ key: "new", label: t("new"), value: data.counts.new, previous: previous === null ? null : previous.counts.new },
-				{ key: "cleared", label: t("cleared"), value: data.counts.cleared, previous: previous === null ? null : previous.counts.cleared },
-				{ key: "touched", label: t("touched"), value: data.counts.touched, previous: previous === null ? null : previous.counts.touched },
-			];
-			const statuses = [
-				{ key: "idea", label: t("statusIdea"), value: board.idea, previous: previous === null ? null : previous.board.idea },
-				{ key: "active", label: t("statusActive"), value: board.active, previous: previous === null ? null : previous.board.active },
-				{ key: "paused", label: t("statusPaused"), value: board.paused, previous: previous === null ? null : previous.board.paused },
-				{ key: "done", label: t("statusDone"), value: board.done, previous: previous === null ? null : previous.board.done },
+			const summary = [
+				{ key: "board", label: t("projects"), value: board.total },
+				{ key: "finished", label: t("finished"), value: data.counts.finished },
+				{ key: "new", label: t("new"), value: data.counts.new },
+				{ key: "cleared", label: t("cleared"), value: data.counts.cleared },
+				{ key: "touched", label: t("touched"), value: data.counts.touched },
 			];
 			const fileLabel = data.source !== null && typeof data.source.file === "string" ? "weekly/" + data.source.file : null;
 			const weekIndex = data.weeks.indexOf(data.week);
@@ -728,7 +721,6 @@ window.__ModuleLoader__.load({
 			const metaParts = [];
 			if (data.generated !== null) metaParts.push(t("generated", { time: data.generated }));
 			if (sourceText !== null) metaParts.push(sourceText);
-			metaParts.push(compare);
 
 			let errorMessage = null;
 			if (errorCode !== null) {
@@ -832,31 +824,20 @@ window.__ModuleLoader__.load({
 							),
 					h(
 						"div",
-						{ className: "dsh-weekly-stats" },
-						stats.map((stat) =>
-							h(StatCard, {
-								key: stat.key,
-								label: stat.label,
-								value: stat.value,
-								previous: stat.previous,
-								unit: stat.unit,
-								compare,
-								t,
-							}),
+						{ className: "dsh-weekly-summary" },
+						summary.map((item, index) =>
+							h(
+								react.Fragment,
+								{ key: item.key },
+								index > 0 ? h("span", { className: "dsh-weekly-summary-sep", "aria-hidden": "true" }, "·") : null,
+								h(
+									"span",
+									{ className: "dsh-weekly-summary-item" },
+									h("span", { className: "dsh-weekly-summary-value" }, valueText(item.value)),
+									h("span", { className: "dsh-weekly-summary-label" }, item.label),
+								),
+							),
 						),
-					),
-					h(
-						"div",
-						{ className: "dsh-weekly-status" },
-						statuses.map((item) => {
-							return h(
-								"div",
-								{ key: item.key, className: "dsh-weekly-status-item" },
-								h("span", { className: "dsh-weekly-status-dot is-" + item.key }),
-								h("span", { className: "dsh-weekly-status-name" }, item.label),
-								h("span", { className: "dsh-weekly-status-value" }, valueText(item.value)),
-							);
-						}),
 					),
 					h(
 						"div",

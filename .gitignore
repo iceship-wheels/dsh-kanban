@@ -2,3 +2,9 @@
 .tmp/
 node_modules/
 *.log
+
+# personal weekly progress snapshots (scheduled summary output, not plugin source)
+weekly/
+
+# plugin scaffolding that DSH creates inside the workspace
+.dsh-created-plugins/

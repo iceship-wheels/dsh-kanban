@@ -2,6 +2,23 @@
   "name": "dsh-plugin-kanban",
   "version": "0.2.0",
   "description": "A project kanban board for the DSH sidebar: markdown tiles, dynamic heights, and a masonry layout that adapts to the window.",
+  "keywords": [
+    "deepseek",
+    "deepseek-harness",
+    "dsh",
+    "dsh-plugin",
+    "kanban",
+    "project-board",
+    "markdown"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iceship-wheels/dsh-kanban.git"
+  },
+  "homepage": "https://github.com/iceship-wheels/dsh-kanban#readme",
+  "bugs": {
+    "url": "https://github.com/iceship-wheels/dsh-kanban/issues"
+  },
   "type": "module",
   "main": "lib/index.js",
   "icon": "icon.svg",
@@ -18,6 +35,7 @@
     "examples",
     "cordis.patch.yml",
     "icon.svg",
+    "screenshots.json",
     "README.md",
     "README.en.md"
   ],

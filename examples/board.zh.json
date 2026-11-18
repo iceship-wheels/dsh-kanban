@@ -1,0 +1,109 @@
+{
+  "version": 2,
+  "groups": [
+    { "id": "work", "title": "工作" },
+    { "id": "learn", "title": "学习" },
+    { "id": "others", "title": "其他" }
+  ],
+  "projects": [
+    {
+      "id": "example-ship",
+      "title": "发布侧边栏入口",
+      "notes": "## 收尾\n- [x] 打包宿主路由\n- [x] 注册 **项目看板** 面板\n- [ ] 重启后确认侧边栏入口",
+      "status": "active",
+      "group": "work",
+      "createdAt": "2026-11-02T09:00:00.000Z",
+      "updatedAt": "2026-11-16T09:20:00.000Z"
+    },
+    {
+      "id": "example-weekly",
+      "title": "接通周报快照页面",
+      "notes": "## 范围\n- [x] 读取 `weekly/2026-W46.md`\n- [ ] 用 ‹ › 切换周\n\n只读：页面不会写入任何文件。",
+      "status": "active",
+      "group": "work",
+      "createdAt": "2026-11-04T08:30:00.000Z",
+      "updatedAt": "2026-11-16T08:55:00.000Z"
+    },
+    {
+      "id": "example-archive",
+      "title": "统一归档文件命名",
+      "notes": "归档文件按 `YYYY-Www.md` 命名；每日整理时追加到当前 ISO 周。",
+      "status": "paused",
+      "group": "work",
+      "createdAt": "2026-11-03T07:10:00.000Z",
+      "updatedAt": "2026-11-15T10:40:00.000Z"
+    },
+    {
+      "id": "example-smoke",
+      "title": "拆分冒烟测试",
+      "notes": "`test/smoke.mjs` 已有 1.2k 行，按宿主、客户端和布局拆成三组。",
+      "status": "idea",
+      "group": "work",
+      "createdAt": "2026-11-06T06:15:00.000Z",
+      "updatedAt": "2026-11-14T07:05:00.000Z"
+    },
+    {
+      "id": "example-backup",
+      "title": "备份看板数据",
+      "notes": "- [x] 把 `board.json` 复制到备份仓库\n- [x] 恢复一次验证流程",
+      "status": "done",
+      "group": "work",
+      "createdAt": "2026-11-01T05:00:00.000Z",
+      "updatedAt": "2026-11-16T09:30:00.000Z"
+    },
+    {
+      "id": "example-cordis",
+      "title": "跟进 Cordis 插槽变更",
+      "notes": "看板注册在 `main` 与 `sidebar.panellist`，升级 DSH 后要重新检查两处。",
+      "status": "active",
+      "group": "work",
+      "createdAt": "2026-11-07T09:45:00.000Z",
+      "updatedAt": "2026-11-13T09:10:00.000Z"
+    },
+    {
+      "id": "example-guide",
+      "title": "读 Cordis 插件指南",
+      "notes": "- [x] 服务与 effect\n- [ ] 插槽 key 与排序\n- [ ] 多语言词典",
+      "status": "active",
+      "group": "learn",
+      "createdAt": "2026-11-05T02:20:00.000Z",
+      "updatedAt": "2026-11-15T02:45:00.000Z"
+    },
+    {
+      "id": "example-has",
+      "title": "CSS `:has()` 实战",
+      "notes": "卡片左侧的状态色只靠一条 `:has()` 规则，不需要额外类名。",
+      "status": "done",
+      "group": "learn",
+      "createdAt": "2026-11-08T03:30:00.000Z",
+      "updatedAt": "2026-11-16T04:00:00.000Z"
+    },
+    {
+      "id": "example-fold",
+      "title": "可折叠的 Markdown 标题",
+      "notes": "在预览里按标题折叠，清单项跟着整段收起。",
+      "status": "paused",
+      "group": "learn",
+      "createdAt": "2026-11-09T01:50:00.000Z",
+      "updatedAt": "2026-11-14T01:15:00.000Z"
+    },
+    {
+      "id": "example-font",
+      "title": "对比桌面端字体渲染",
+      "notes": "在办公显示器上分别用 100% 和 150% 缩放检查看板。",
+      "status": "idea",
+      "group": "others",
+      "createdAt": "2026-11-10T11:00:00.000Z",
+      "updatedAt": "2026-11-12T11:30:00.000Z"
+    },
+    {
+      "id": "example-docs",
+      "title": "整理截图流程",
+      "notes": "- [x] 补充示例看板\n- [x] 用无头 Chrome 截取看板\n- [ ] 把图片放进 `docs/`",
+      "status": "done",
+      "group": "others",
+      "createdAt": "2026-11-11T09:00:00.000Z",
+      "updatedAt": "2026-11-16T10:00:00.000Z"
+    }
+  ]
+}

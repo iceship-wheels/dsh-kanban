@@ -14,9 +14,12 @@
   },
   "files": [
     "lib",
+    "docs",
+    "examples",
     "cordis.patch.yml",
     "icon.svg",
-    "README.md"
+    "README.md",
+    "README.en.md"
   ],
   "devDependencies": {
     "react": "^18.3.1",

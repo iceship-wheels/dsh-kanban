@@ -1,0 +1,109 @@
+{
+  "version": 2,
+  "groups": [
+    { "id": "work", "title": "Work" },
+    { "id": "learn", "title": "Learn" },
+    { "id": "others", "title": "Others" }
+  ],
+  "projects": [
+    {
+      "id": "example-ship",
+      "title": "Ship the sidebar entry",
+      "notes": "## Wrap up\n- [x] Bundle the host route\n- [x] Register the **Kanban** panel\n- [ ] Confirm the entry after a restart",
+      "status": "active",
+      "group": "work",
+      "createdAt": "2026-11-02T09:00:00.000Z",
+      "updatedAt": "2026-11-16T09:20:00.000Z"
+    },
+    {
+      "id": "example-weekly",
+      "title": "Wire the weekly snapshot page",
+      "notes": "## Scope\n- [x] Read `weekly/2026-W46.md`\n- [ ] Move between weeks with ‹ ›\n\nRead-only: the page never writes a file.",
+      "status": "active",
+      "group": "work",
+      "createdAt": "2026-11-04T08:30:00.000Z",
+      "updatedAt": "2026-11-16T08:55:00.000Z"
+    },
+    {
+      "id": "example-archive",
+      "title": "Tidy the archive filenames",
+      "notes": "Archive files follow `YYYY-Www.md`; the daily sweep appends to the current ISO week.",
+      "status": "paused",
+      "group": "work",
+      "createdAt": "2026-11-03T07:10:00.000Z",
+      "updatedAt": "2026-11-15T10:40:00.000Z"
+    },
+    {
+      "id": "example-smoke",
+      "title": "Split the smoke test",
+      "notes": "`test/smoke.mjs` is 1.2k lines. Split it into host, client and layout suites.",
+      "status": "idea",
+      "group": "work",
+      "createdAt": "2026-11-06T06:15:00.000Z",
+      "updatedAt": "2026-11-14T07:05:00.000Z"
+    },
+    {
+      "id": "example-backup",
+      "title": "Back up the board file",
+      "notes": "- [x] Copy `board.json` to the backup repo\n- [x] Restore once to check the flow",
+      "status": "done",
+      "group": "work",
+      "createdAt": "2026-11-01T05:00:00.000Z",
+      "updatedAt": "2026-11-16T09:30:00.000Z"
+    },
+    {
+      "id": "example-cordis",
+      "title": "Track the Cordis slot change",
+      "notes": "The board registers into `main` and `sidebar.panellist`. Re-check both after a DSH upgrade.",
+      "status": "active",
+      "group": "work",
+      "createdAt": "2026-11-07T09:45:00.000Z",
+      "updatedAt": "2026-11-13T09:10:00.000Z"
+    },
+    {
+      "id": "example-guide",
+      "title": "Read the Cordis plugin guide",
+      "notes": "- [x] Services and effects\n- [ ] Slot keys and ordering\n- [ ] Locale dictionaries",
+      "status": "active",
+      "group": "learn",
+      "createdAt": "2026-11-05T02:20:00.000Z",
+      "updatedAt": "2026-11-15T02:45:00.000Z"
+    },
+    {
+      "id": "example-has",
+      "title": "CSS `:has()` in practice",
+      "notes": "The status accent on each card is a single `:has()` rule — no extra class bookkeeping.",
+      "status": "done",
+      "group": "learn",
+      "createdAt": "2026-11-08T03:30:00.000Z",
+      "updatedAt": "2026-11-16T04:00:00.000Z"
+    },
+    {
+      "id": "example-fold",
+      "title": "Foldable markdown sections",
+      "notes": "Headings fold from the preview; the checklist items inside the section fold with them.",
+      "status": "paused",
+      "group": "learn",
+      "createdAt": "2026-11-09T01:50:00.000Z",
+      "updatedAt": "2026-11-14T01:15:00.000Z"
+    },
+    {
+      "id": "example-font",
+      "title": "Compare desktop font rendering",
+      "notes": "Check the board at 100% and 150% scaling on the office monitor.",
+      "status": "idea",
+      "group": "others",
+      "createdAt": "2026-11-10T11:00:00.000Z",
+      "updatedAt": "2026-11-12T11:30:00.000Z"
+    },
+    {
+      "id": "example-docs",
+      "title": "Document the screenshot flow",
+      "notes": "- [x] Add example boards\n- [x] Capture the board with headless Chrome\n- [ ] Keep the images in `docs/`",
+      "status": "done",
+      "group": "others",
+      "createdAt": "2026-11-11T09:00:00.000Z",
+      "updatedAt": "2026-11-16T10:00:00.000Z"
+    }
+  ]
+}

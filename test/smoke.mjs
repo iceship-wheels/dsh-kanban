@@ -522,10 +522,10 @@ check('nextInCycle walks statuses and groups and wraps around', () => {
   assert.equal(internals.nextInCycle(items, 'paused').id, 'idea')
   assert.equal(internals.nextInCycle(items, 'unknown').id, 'idea')
 })
-check('editor is a modal with a large notes area', () => {
-  assert.match(editorHtml, /class="dsh-kanban-editor-backdrop"/)
-  assert.match(editorHtml, /role="dialog"/)
-  assert.match(editorHtml, /aria-modal="true"/)
+check('editor edits in place: a form tile in the board flow, not a modal', () => {
+  assert.match(editorHtml, /class="dsh-kanban-editor"/)
+  assert.match(editorHtml, /role="form"/)
+  assert.doesNotMatch(editorHtml, /dsh-kanban-editor-backdrop|dsh-kanban-editor-dialog|aria-modal/)
   assert.match(editorHtml, /dsh-kanban-editor-body/)
   assert.match(editorHtml, /dsh-kanban-editor-hint/)
 })
@@ -591,6 +591,30 @@ check('stacked group wraps tiles in a readable-width grid instead of full-width 
   assert.match(stackGroupHtml, /dsh-kanban-group-content is-stack/)
   assert.match(stackGroupHtml, /repeat\(auto-fill, minmax\(min\(300px, 100%\), 1fr\)\)/)
   assert.doesNotMatch(stackGroupHtml, /column-count/)
+})
+const inlineEditorHtml = ReactDOMServer.renderToStaticMarkup(
+  React.createElement(internals.GroupSection, {
+    group: internals.DEFAULT_GROUPS[0],
+    projects: [project],
+    mode: 'stack',
+    columns: 1,
+    overflow: false,
+    t,
+    measure: () => {},
+    renderProject: (item) => React.createElement(internals.ProjectCard, { key: item.id, project: item, t, onEdit: () => {}, onToggleTask: () => {}, onDelete: () => {}, onCycleStatus: () => {} }),
+    onNewProject: () => {},
+    newProjectEditor: React.createElement(internals.ProjectEditor, {
+      initial: { title: '', notes: '', status: 'idea', group: 'work' },
+      groups: internals.DEFAULT_GROUPS,
+      t,
+      onSave: () => {},
+      onCancel: () => {},
+    }),
+  }),
+)
+check('a new project editor renders inside its group band, ahead of the tiles', () => {
+  assert.match(inlineEditorHtml, /data-group-content="work"[^>]*><div class="dsh-kanban-editor"/)
+  assert.doesNotMatch(inlineEditorHtml, /dsh-kanban-editor-backdrop/)
 })
 const popoverHtml = ReactDOMServer.renderToStaticMarkup(
   React.createElement(internals.GroupsPopover, { groups: internals.DEFAULT_GROUPS, t, onChange: () => {}, onClose: () => {} }),

@@ -706,8 +706,8 @@ const fakeClientCtx = {
   },
 }
 clientExports.apply(fakeClientCtx)
-check('waits for the sidebar panellist and main slots', () =>
-  assert.deepEqual(injections.sort(), ['main', 'sidebar.panellist']))
+check('waits for both sidebar panellists and main pages', () =>
+  assert.deepEqual(injections.sort(), ['main', 'main', 'sidebar.panellist', 'sidebar.panellist']))
 check('registers one sidebar entry with the kanban id', () => {
   const entry = registrations.find((item) => item.options.name === 'sidebar.panellist')
   assert.ok(entry)
@@ -716,12 +716,28 @@ check('registers one sidebar entry with the kanban id', () => {
   assert.equal(entry.options.label(), 'panel')
   assert.equal(typeof entry.component, 'function')
 })
+check('registers the weekly sidebar entry beside kanban', () => {
+  const entry = registrations.find(
+    (item) => item.options.name === 'sidebar.panellist' && item.options.id === 'weekly-snapshot',
+  )
+  assert.ok(entry)
+  assert.equal(entry.options.order, 2)
+  assert.equal(typeof entry.component, 'function')
+})
 check('registers one keyed main page', () => {
   const entry = registrations.find((item) => item.options.name === 'main')
   assert.ok(entry)
   assert.equal(entry.options.key, internals.PANEL_ID)
   const element = entry.component({})
   assert.equal(element.type, internals.KanbanPage)
+})
+check('registers the weekly main page', () => {
+  const entry = registrations.find(
+    (item) => item.options.name === 'main' && item.options.key === 'weekly-snapshot',
+  )
+  assert.ok(entry)
+  const element = entry.component({})
+  assert.equal(element.type, internals.WeeklyPage)
 })
 check('panel glyph renders at a requested size', () => {
   const entry = registrations.find((item) => item.options.name === 'sidebar.panellist')

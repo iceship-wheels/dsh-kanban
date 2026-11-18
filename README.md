@@ -71,9 +71,9 @@ cp examples/board.zh.json ~/.dsh/kanban/board.json
 - 启动 DeepSeek Harness 前，在宿主环境里设置 `DSH_KANBAN_AUTOMATION=off`（也支持 `0`、`false`、`disabled`）可以关闭自动整理。
 - 归档就是普通 Markdown：可以直接阅读、编辑，或备份到 DSH 之外。其他状态的项目不会被改动。
 
-## 每周页面
+## 每周面板
 
-`weekly-page/` 是一个配套的浏览器插件，用来查看每周进度快照。它读取本工作区的 `weekly/YYYY-Www.md`，显示最新一周，并用页头的 **‹ / ›** 按钮切换周。它和看板 bundle 分开安装（以 `@dsh-local/view-959dc1ec-…` 的形式链接进 `desktop` profile），并且从不写文件。
+插件还在左侧边栏的 **Kanban** 旁提供 **Weekly** 面板。它读取本工作区的 `weekly/YYYY-Www.md` 快照，显示最新一周——一行摘要、已完成项目和一个小的活动图表——并用 **‹ / ›** 切换周。它由同一个宿主半部分在 `/dsh-kanban/api/weekly` 提供，并且从不写文件。
 
 ## 升级
 

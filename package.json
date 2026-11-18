@@ -1,7 +1,7 @@
 {
   "name": "dsh-plugin-kanban",
   "version": "0.2.0",
-  "description": "A project kanban board for the DSH sidebar: markdown tiles, dynamic heights, and a masonry layout that adapts to the window.",
+  "description": "A project kanban board for the DSH sidebar: markdown tiles, dynamic heights, a masonry layout that adapts to the window, and a weekly progress panel.",
   "keywords": [
     "deepseek",
     "deepseek-harness",

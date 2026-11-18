@@ -1,6 +1,0 @@
-{
-  "meta": {
-    "title": "Weekly kanban snapshot",
-    "description": "Adds a Weekly entry to the left sidebar beside Kanban. It opens a full-page visual snapshot of the newest weekly/*.md file in this workspace: completed projects with group and date, this week's board and activity counts with previous-week deltas, and a compact bar chart of finished, new, cleared and touched projects. The page reads that markdown file when it opens, when the window becomes active again, or when you press Refresh; it writes nothing. Turning the plugin off removes the sidebar entry and page and leaves the weekly files untouched."
-  }
-}

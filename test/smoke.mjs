@@ -574,6 +574,24 @@ check('group section renders its header, count and content columns', () => {
   assert.match(groupHtml, /Demo project/)
   assert.match(groupHtml, /column-count:2/)
 })
+const stackGroupHtml = ReactDOMServer.renderToStaticMarkup(
+  React.createElement(internals.GroupSection, {
+    group: internals.DEFAULT_GROUPS[0],
+    projects: [project],
+    mode: 'stack',
+    columns: 1,
+    overflow: false,
+    t,
+    measure: () => {},
+    renderProject: (item) => React.createElement(internals.ProjectCard, { key: item.id, project: item, t, onEdit: () => {}, onToggleTask: () => {}, onDelete: () => {}, onCycleStatus: () => {} }),
+    onNewProject: () => {},
+  }),
+)
+check('stacked group wraps tiles in a readable-width grid instead of full-width rows', () => {
+  assert.match(stackGroupHtml, /dsh-kanban-group-content is-stack/)
+  assert.match(stackGroupHtml, /repeat\(auto-fill, minmax\(min\(300px, 100%\), 1fr\)\)/)
+  assert.doesNotMatch(stackGroupHtml, /column-count/)
+})
 const popoverHtml = ReactDOMServer.renderToStaticMarkup(
   React.createElement(internals.GroupsPopover, { groups: internals.DEFAULT_GROUPS, t, onChange: () => {}, onClose: () => {} }),
 )
